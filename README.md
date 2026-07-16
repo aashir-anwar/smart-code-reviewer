@@ -2,6 +2,10 @@
 
 An LLM-powered pre-review tool that checks code for **readability, structure, and maintainability** before it reaches a human reviewer — with schema-validated output and deterministic verification of every claim the model makes.
 
+
+
+**Live demo:** [streamlit app](https://smart-code-reviewer-Aashir.streamlit.app)
+
 ## Why
 
 AI code review tools tend to fail in two predictable ways:
@@ -26,9 +30,9 @@ paste code ──> line-number the snippet ──> LLM review against explicit r
 
 Each review returns:
 
-- A **verdict**: `approve`, `approve_with_nits`, or `request_changes`
-- Up to six **issues**, each with a line range, dimension, severity, explanation, and a concrete suggested fix
-- One specific **positive note** — reviews that only criticize get ignored
+* A **verdict**: `approve`, `approve\\\_with\\\_nits`, or `request\\\_changes`
+* Up to six **issues**, each with a line range, dimension, severity, explanation, and a concrete suggested fix
+* One specific **positive note** — reviews that only criticize get ignored
 
 ## Design decisions
 
@@ -38,7 +42,7 @@ Each review returns:
 
 **Deterministic validation, not a second LLM pass.** The classic failure mode of AI code review is hallucinated line references. Instead of asking the model to self-check (slow, costly, still fallible), the app numbers the input lines and verifies every referenced line exists — in plain Python. Never use an LLM for something code can check.
 
-**Severity gate.** Any high-severity issue forces a `request_changes` verdict, enforced in code even if the model was lenient. Style nits alone never block.
+**Severity gate.** Any high-severity issue forces a `request\\\_changes` verdict, enforced in code even if the model was lenient. Style nits alone never block.
 
 **Single-pass review.** An agentic multi-turn reviewer would be more thorough, but at PR scale latency and cost matter; one well-constrained call covers the pre-review use case.
 
@@ -57,24 +61,24 @@ Configure a provider (pick one):
 **Groq (free tier):**
 
 ```bash
-export OPENAI_API_KEY=gsk_...
-export OPENAI_BASE_URL=https://api.groq.com/openai/v1
-export OPENAI_MODEL=llama-3.3-70b-versatile
+export OPENAI\\\_API\\\_KEY=gsk\\\_...
+export OPENAI\\\_BASE\\\_URL=https://api.groq.com/openai/v1
+export OPENAI\\\_MODEL=llama-3.3-70b-versatile
 ```
 
 **OpenAI:**
 
 ```bash
-export OPENAI_API_KEY=sk-...
+export OPENAI\\\_API\\\_KEY=sk-...
 # defaults: https://api.openai.com/v1, gpt-4o-mini
 ```
 
 **Azure OpenAI:**
 
 ```bash
-export AZURE_OPENAI_ENDPOINT=https://<resource>.openai.azure.com
-export AZURE_OPENAI_API_KEY=...
-export AZURE_OPENAI_DEPLOYMENT=<deployment-name>
+export AZURE\\\_OPENAI\\\_ENDPOINT=https://<resource>.openai.azure.com
+export AZURE\\\_OPENAI\\\_API\\\_KEY=...
+export AZURE\\\_OPENAI\\\_DEPLOYMENT=<deployment-name>
 ```
 
 Then run:
@@ -83,19 +87,19 @@ Then run:
 streamlit run app.py
 ```
 
-On Windows PowerShell, use `$env:OPENAI_API_KEY = "..."` instead of `export`, and `python -m streamlit run app.py` if `streamlit` isn't on your PATH.
+On Windows PowerShell, use `$env:OPENAI\\\_API\\\_KEY = "..."` instead of `export`, and `python -m streamlit run app.py` if `streamlit` isn't on your PATH.
 
 ## Configuration reference
 
-| Variable | Required | Default | Purpose |
-|---|---|---|---|
-| `OPENAI_API_KEY` | yes* | — | API key for any OpenAI-compatible provider |
-| `OPENAI_BASE_URL` | no | `https://api.openai.com/v1` | Endpoint (e.g. Groq, Gemini) |
-| `OPENAI_MODEL` | no | `gpt-4o-mini` | Model name |
-| `AZURE_OPENAI_ENDPOINT` | yes* | — | Switches the app to Azure OpenAI mode |
-| `AZURE_OPENAI_API_KEY` | with Azure | — | Azure key |
-| `AZURE_OPENAI_DEPLOYMENT` | with Azure | `gpt-4o-mini` | Azure deployment name |
-| `AZURE_OPENAI_API_VERSION` | no | `2024-06-01` | Azure API version |
+|Variable|Required|Default|Purpose|
+|-|-|-|-|
+|`OPENAI\\\_API\\\_KEY`|yes\*|—|API key for any OpenAI-compatible provider|
+|`OPENAI\\\_BASE\\\_URL`|no|`https://api.openai.com/v1`|Endpoint (e.g. Groq, Gemini)|
+|`OPENAI\\\_MODEL`|no|`gpt-4o-mini`|Model name|
+|`AZURE\\\_OPENAI\\\_ENDPOINT`|yes\*|—|Switches the app to Azure OpenAI mode|
+|`AZURE\\\_OPENAI\\\_API\\\_KEY`|with Azure|—|Azure key|
+|`AZURE\\\_OPENAI\\\_DEPLOYMENT`|with Azure|`gpt-4o-mini`|Azure deployment name|
+|`AZURE\\\_OPENAI\\\_API\\\_VERSION`|no|`2024-06-01`|Azure API version|
 
 \* Provide either the OpenAI-compatible key **or** the Azure trio.
 
@@ -105,10 +109,10 @@ On Windows PowerShell, use `$env:OPENAI_API_KEY = "..."` instead of `export`, an
 2. On [share.streamlit.io](https://share.streamlit.io): **New app** → select the repo, branch `main`, file `app.py`.
 3. Under **Advanced settings → Secrets**, add your provider variables in TOML form:
 
-   ```toml
-   OPENAI_API_KEY = "gsk_..."
-   OPENAI_BASE_URL = "https://api.groq.com/openai/v1"
-   OPENAI_MODEL = "llama-3.3-70b-versatile"
+```toml
+   OPENAI\\\_API\\\_KEY = "gsk\\\_..."
+   OPENAI\\\_BASE\\\_URL = "https://api.groq.com/openai/v1"
+   OPENAI\\\_MODEL = "llama-3.3-70b-versatile"
    ```
 
 4. Deploy. Secrets are injected as environment variables — no code changes needed.
@@ -117,11 +121,11 @@ On Windows PowerShell, use `$env:OPENAI_API_KEY = "..."` instead of `export`, an
 
 The `samples/` directory contains three self-created, deliberately flawed snippets for demoing the reviewer:
 
-| File | Language | Planted issues |
-|---|---|---|
-| `01_swallowed_exception.py` | Python | bare `except: pass`, mutable default arguments, unguarded dict access |
-| `02_god_method.cs` | C# | one method doing validation + pricing + persistence + email, SQL built by string concatenation, hardcoded credentials |
-| `03_duplicated_logic.ts` | TypeScript | the same filter logic duplicated across three functions, `any` types, loose equality |
+|File|Language|Planted issues|
+|-|-|-|
+|`01\\\_swallowed\\\_exception.py`|Python|bare `except: pass`, mutable default arguments, unguarded dict access|
+|`02\\\_god\\\_method.cs`|C#|one method doing validation + pricing + persistence + email, SQL built by string concatenation, hardcoded credentials|
+|`03\\\_duplicated\\\_logic.ts`|TypeScript|the same filter logic duplicated across three functions, `any` types, loose equality|
 
 ## Project structure
 
@@ -132,12 +136,13 @@ The `samples/` directory contains three self-created, deliberately flawed snippe
 └── README.md
 ```
 
-## Limitations & possible extensions
+## Limitations \& possible extensions
 
-- Reviews a single snippet per call; it doesn't see the wider codebase, so cross-file concerns (dead public APIs, architectural drift) are out of scope.
-- Line-reference validation checks *existence*, not *relevance* — a model could cite a real but wrong line. A stricter check could verify the cited lines contain the tokens the issue mentions.
-- Natural extensions: a GitHub Action that runs the same prompt + validation on PR diffs and posts findings as review comments; per-repo rubric overrides via a config file; caching reviews by snippet hash.
+* Reviews a single snippet per call; it doesn't see the wider codebase, so cross-file concerns (dead public APIs, architectural drift) are out of scope.
+* Line-reference validation checks *existence*, not *relevance* — a model could cite a real but wrong line. A stricter check could verify the cited lines contain the tokens the issue mentions.
+* Natural extensions: a GitHub Action that runs the same prompt + validation on PR diffs and posts findings as review comments; per-repo rubric overrides via a config file; caching reviews by snippet hash.
 
 ## License
 
 MIT
+
